@@ -1,6 +1,6 @@
 import sqlite3
 
-DB_NAME = "school.db"
+DB_NAME = "database.db"
 
 def get_db_connection():
     conn = sqlite3.connect(DB_NAME)
@@ -11,30 +11,6 @@ def init_db():
     conn = get_db_connection()
 
     conn.execute("""
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        role TEXT NOT NULL
-    )
-    """)
-
-    conn.execute("""
-    CREATE TABLE IF NOT EXISTS grades (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        student_email TEXT NOT NULL,
-        subject TEXT NOT NULL,
-        grade INTEGER NOT NULL,
-        year INTEGER NOT NULL,
-        semester INTEGER NOT NULL
-    )
-    """)
-
-    conn.commit()
-    conn.close()
-def init_db():
-    conn = sqlite3.connect("database.db")
-    conn.execute("""
         CREATE TABLE IF NOT EXISTS grades (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             student_email TEXT NOT NULL,
@@ -43,5 +19,7 @@ def init_db():
             semester INTEGER NOT NULL
         )
     """)
+
     conn.commit()
     conn.close()
+

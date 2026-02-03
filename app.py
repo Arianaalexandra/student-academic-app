@@ -2,21 +2,19 @@ from flask import Flask, render_template, request, redirect, url_for, session
 import sqlite3
 from functools import wraps
 
+# ======================
+# APP
+# ======================
 app = Flask(__name__)
 app.secret_key = "secret123"
 
-from database import init_db
+# ======================
+# DATABASE INIT
+# ======================
+from database import init_db, get_db_connection
 
+# creează tabela grades dacă nu există (FOARTE IMPORTANT PE RENDER)
 init_db()
-
-# ======================
-# DATABASE
-# ======================
-def get_db():
-    conn = sqlite3.connect("database.db")
-    conn.row_factory = sqlite3.Row
-    return conn
-
 
 # ======================
 # AUTH DECORATOR
@@ -44,11 +42,13 @@ def login():
         if not email.endswith("@utm.ro"):
             return "Email universitar invalid"
 
+        # ADMIN
         if email.startswith("admin") and password == "admin":
             session["user"] = email
             session["role"] = "admin"
             return redirect(url_for("admin"))
 
+        # STUDENT
         session["user"] = email
         session["role"] = "student"
         return redirect(url_for("dashboard"))
@@ -71,7 +71,7 @@ def logout():
 @app.route("/admin", methods=["GET", "POST"])
 @login_required("admin")
 def admin():
-    conn = get_db()
+    conn = get_db_connection()
 
     if request.method == "POST":
         student_email = request.form["student_email"]
@@ -81,10 +81,10 @@ def admin():
 
         conn.execute(
             """
-            INSERT INTO grades (student_email, email, subject, grade, semester)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO grades (student_email, subject, grade, semester)
+            VALUES (?, ?, ?, ?)
             """,
-            (student_email, student_email, subject, grade, semester)
+            (student_email, subject, grade, semester)
         )
         conn.commit()
 
@@ -106,7 +106,7 @@ def admin():
 @app.route("/delete-grade/<int:id>")
 @login_required("admin")
 def delete_grade(id):
-    conn = get_db()
+    conn = get_db_connection()
     conn.execute("DELETE FROM grades WHERE id = ?", (id,))
     conn.commit()
     conn.close()
@@ -120,7 +120,7 @@ def delete_grade(id):
 @login_required("student")
 def dashboard():
     email = session["user"]
-    conn = get_db()
+    conn = get_db_connection()
 
     grades = conn.execute(
         """
@@ -133,6 +133,7 @@ def dashboard():
 
     conn.close()
 
+    # MEDII
     semester_averages = {1: None, 2: None}
     general_average = None
 
