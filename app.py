@@ -5,6 +5,9 @@ from functools import wraps
 app = Flask(__name__)
 app.secret_key = "secret123"
 
+from database import init_db
+
+init_db()
 
 # ======================
 # DATABASE

@@ -32,3 +32,16 @@ def init_db():
 
     conn.commit()
     conn.close()
+def init_db():
+    conn = sqlite3.connect("database.db")
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS grades (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_email TEXT NOT NULL,
+            subject TEXT NOT NULL,
+            grade INTEGER NOT NULL,
+            semester INTEGER NOT NULL
+        )
+    """)
+    conn.commit()
+    conn.close()
