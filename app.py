@@ -5,8 +5,14 @@ from database import get_db_connection, init_db
 app = Flask(__name__)
 app.secret_key = "secret123"
 
-# 🔥 FOARTE IMPORTANT: creează DB la pornire (Render)
-init_db()
+
+# ======================
+# INIT DB (CRITICAL FIX)
+# ======================
+@app.before_first_request
+def initialize_database():
+    init_db()
+
 
 # ======================
 # AUTH DECORATOR
@@ -91,7 +97,7 @@ def admin():
 
 
 # ======================
-# DELETE GRADE
+# DELETE
 # ======================
 @app.route("/delete-grade/<int:id>")
 @login_required("admin")
@@ -104,7 +110,7 @@ def delete_grade(id):
 
 
 # ======================
-# DASHBOARD STUDENT
+# DASHBOARD
 # ======================
 @app.route("/dashboard")
 @login_required("student")
