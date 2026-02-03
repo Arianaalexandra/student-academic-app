@@ -1,17 +1,40 @@
 from flask import Flask, render_template, request, redirect, url_for, session
+import sqlite3
 from functools import wraps
-from database import get_db_connection, init_db
+import os
 
 app = Flask(__name__)
 app.secret_key = "secret123"
 
+DB_PATH = os.path.join(os.getcwd(), "database.db")
+
 
 # ======================
-# INIT DB (CRITICAL FIX)
+# DATABASE
 # ======================
-@app.before_first_request
-def initialize_database():
-    init_db()
+def get_db():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def init_db():
+    conn = get_db()
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS grades (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_email TEXT NOT NULL,
+            subject TEXT NOT NULL,
+            grade INTEGER NOT NULL,
+            semester INTEGER NOT NULL
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+
+# 🔥 AICI ESTE CHEIA
+init_db()
 
 
 # ======================
@@ -67,7 +90,7 @@ def logout():
 @app.route("/admin", methods=["GET", "POST"])
 @login_required("admin")
 def admin():
-    conn = get_db_connection()
+    conn = get_db()
 
     if request.method == "POST":
         student_email = request.form["student_email"]
@@ -75,34 +98,28 @@ def admin():
         grade = int(request.form["grade"])
         semester = int(request.form["semester"])
 
-        conn.execute(
-            """
+        conn.execute("""
             INSERT INTO grades (student_email, subject, grade, semester)
             VALUES (?, ?, ?, ?)
-            """,
-            (student_email, subject, grade, semester)
-        )
+        """, (student_email, subject, grade, semester))
         conn.commit()
 
-    grades = conn.execute(
-        """
-        SELECT id, student_email, subject, grade, semester
-        FROM grades
+    grades = conn.execute("""
+        SELECT * FROM grades
         ORDER BY student_email
-        """
-    ).fetchall()
+    """).fetchall()
 
     conn.close()
     return render_template("admin.html", grades=grades)
 
 
 # ======================
-# DELETE
+# DELETE GRADE
 # ======================
 @app.route("/delete-grade/<int:id>")
 @login_required("admin")
 def delete_grade(id):
-    conn = get_db_connection()
+    conn = get_db()
     conn.execute("DELETE FROM grades WHERE id = ?", (id,))
     conn.commit()
     conn.close()
@@ -110,22 +127,19 @@ def delete_grade(id):
 
 
 # ======================
-# DASHBOARD
+# DASHBOARD STUDENT
 # ======================
 @app.route("/dashboard")
 @login_required("student")
 def dashboard():
     email = session["user"]
-    conn = get_db_connection()
+    conn = get_db()
 
-    grades = conn.execute(
-        """
+    grades = conn.execute("""
         SELECT subject, grade, semester
         FROM grades
         WHERE student_email = ?
-        """,
-        (email,)
-    ).fetchall()
+    """, (email,)).fetchall()
 
     conn.close()
 
