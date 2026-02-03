@@ -1,19 +1,11 @@
 from flask import Flask, render_template, request, redirect, url_for, session
-import sqlite3
 from functools import wraps
+from database import get_db_connection, init_db
 
-# ======================
-# APP
-# ======================
 app = Flask(__name__)
 app.secret_key = "secret123"
 
-# ======================
-# DATABASE INIT
-# ======================
-from database import init_db, get_db_connection
-
-# creează tabela grades dacă nu există (FOARTE IMPORTANT PE RENDER)
+# 🔥 FOARTE IMPORTANT: creează DB la pornire (Render)
 init_db()
 
 # ======================
@@ -42,13 +34,11 @@ def login():
         if not email.endswith("@utm.ro"):
             return "Email universitar invalid"
 
-        # ADMIN
         if email.startswith("admin") and password == "admin":
             session["user"] = email
             session["role"] = "admin"
             return redirect(url_for("admin"))
 
-        # STUDENT
         session["user"] = email
         session["role"] = "student"
         return redirect(url_for("dashboard"))
@@ -133,7 +123,6 @@ def dashboard():
 
     conn.close()
 
-    # MEDII
     semester_averages = {1: None, 2: None}
     general_average = None
 
@@ -160,8 +149,5 @@ def dashboard():
     )
 
 
-# ======================
-# RUN
-# ======================
 if __name__ == "__main__":
     app.run(debug=True)
