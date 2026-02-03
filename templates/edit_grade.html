@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>Editare notă</title>
+</head>
+<body>
+
+<h2>Editare notă</h2>
+
+<form method="POST">
+    <p>Email student: <strong>{{ grade.student_email }}</strong></p>
+
+    <input type="text" name="subject" value="{{ grade.subject }}" required>
+    <input type="number" name="grade" min="1" max="10" value="{{ grade.grade }}" required>
+
+    <button type="submit">Salvează</button>
+</form>
+
+<br>
+<a href="/admin">⬅ Înapoi</a>
+
+</body>
+</html>

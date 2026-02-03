@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Despre aplicație{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h3>Despre aplicație</h3>
+
+        <p>
+            Această aplicație web a fost dezvoltată în cadrul proiectului de licență
+            și are ca scop vizualizarea situației la învățătură a studenților
+            dintr-o instituție de învățământ.
+        </p>
+
+        <ul>
+            <li>Integrare cu Google Classroom API</li>
+            <li>Bază de date relațională (SQLite)</li>
+            <li>Aplicație Web (Flask)</li>
+            <li>Arhitectură SaaS</li>
+        </ul>
+
+        <p>
+            Aplicația permite autentificarea studenților, afișarea notelor,
+            calculul mediilor și exportul situației școlare.
+        </p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+flask
+google-api-python-client
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+matplotlib
+pandas
+openpyxl
+reportlab
+gunicorn

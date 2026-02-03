@@ -1,0 +1,16 @@
+# secrete
+credentials.json
+
+# baze de date locale
+*.db
+
+# cache
+__pycache__/
+*.pyc
+
+# virtual env
+venv/
+.env
+credentials.json
+*.db
+__pycache__/

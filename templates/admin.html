@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>Panou Administrator</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-primary shadow">
+    <div class="container-fluid">
+        <span class="navbar-brand fw-bold">
+            <i class="bi bi-mortarboard-fill me-2"></i>
+            Panou Administrator
+        </span>
+
+        <a href="{{ url_for('logout') }}" class="btn btn-outline-light">
+            <i class="bi bi-box-arrow-right"></i> Logout
+        </a>
+    </div>
+</nav>
+
+<div class="container my-5">
+
+    <!-- ADAUGARE NOTĂ -->
+    <div class="card shadow-sm mb-5">
+        <div class="card-header fw-bold bg-white">
+            <i class="bi bi-plus-circle me-2"></i> Adăugare notă
+        </div>
+
+        <div class="card-body">
+            <form method="post" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Email student</label>
+                    <input name="student_email" class="form-control" placeholder="student@utm.ro" required>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Disciplină</label>
+                    <input name="subject" class="form-control" required>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Notă</label>
+                    <input name="grade" type="number" min="1" max="10" class="form-control" required>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Semestru</label>
+                    <select name="semester" class="form-select">
+                        <option value="1">Semestrul 1</option>
+                        <option value="2">Semestrul 2</option>
+                    </select>
+                </div>
+
+                <div class="col-md-1 d-flex align-items-end">
+                    <button class="btn btn-success w-100">
+                        <i class="bi bi-check-lg"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- NOTE GRUPATE PE STUDENT -->
+    {% set studenti = {} %}
+    {% for g in grades %}
+        {% if g.student_email not in studenti %}
+            {% set _ = studenti.update({g.student_email: []}) %}
+        {% endif %}
+        {% set _ = studenti[g.student_email].append(g) %}
+    {% endfor %}
+
+    {% for email, note in studenti.items() %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white fw-bold">
+            <i class="bi bi-person-circle me-2"></i>
+            {{ email }}
+        </div>
+
+        <div class="card-body table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Disciplină</th>
+                        <th class="text-center">Notă</th>
+                        <th class="text-center">Sem</th>
+                        <th class="text-center">Acțiuni</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for g in note %}
+                    <tr>
+                        <td>{{ g.subject }}</td>
+                        <td class="text-center">
+                            <span class="badge bg-success fs-6">{{ g.grade }}</span>
+                        </td>
+                        <td class="text-center">{{ g.semester }}</td>
+                        <td class="text-center">
+                           <a href="{{ url_for('delete_grade', id=g.id) }}"
+                               class="btn btn-sm btn-outline-danger"
+                               onclick="return confirm('Sigur dorești ștergerea notei?')">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+
+</body>
+</html>

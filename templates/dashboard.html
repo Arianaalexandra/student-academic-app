@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Student</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-primary shadow">
+    <div class="container-fluid">
+        <span class="navbar-brand fw-bold">
+            <i class="bi bi-person-badge-fill me-2"></i>
+            Panou Student
+        </span>
+
+        <a href="{{ url_for('logout') }}" class="btn btn-outline-light">
+            <i class="bi bi-box-arrow-right"></i> Logout
+        </a>
+    </div>
+</nav>
+
+<div class="container my-5">
+
+    <!-- MEDIA GENERALĂ -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">Media generală</h6>
+                    <h1 class="fw-bold text-primary">
+                        {{ general_average | round(2) if general_average else "—" }}
+                    </h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">Media Semestrul 1</h6>
+                    <h1 class="fw-bold text-success">
+                        {{ semester_averages[1] | round(2) if semester_averages[1] else "—" }}
+                    </h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">Media Semestrul 2</h6>
+                    <h1 class="fw-bold text-warning">
+                        {{ semester_averages[2] | round(2) if semester_averages[2] else "—" }}
+                    </h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GRAFIC NOTE -->
+    <div class="card shadow-sm mb-5">
+        <div class="card-header fw-bold bg-white">
+            <i class="bi bi-bar-chart-line-fill me-2"></i>
+            Evoluția notelor
+        </div>
+
+        <div class="card-body">
+            <canvas id="gradesChart" height="100"></canvas>
+        </div>
+    </div>
+
+    <!-- NOTE PE SEMESTRE -->
+    {% for sem in [1,2] %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header fw-bold bg-white">
+            <i class="bi bi-journal-bookmark-fill me-2"></i>
+            Semestrul {{ sem }}
+        </div>
+
+        <div class="card-body table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Disciplină</th>
+                        <th class="text-center">Notă</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for g in grades if g.semester == sem %}
+                    <tr>
+                        <td>{{ g.subject }}</td>
+                        <td class="text-center">
+                            <span class="badge bg-primary fs-6">{{ g.grade }}</span>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="2" class="text-center text-muted">
+                            Nu există note pentru acest semestru
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+
+<script>
+const ctx = document.getElementById('gradesChart');
+
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: {{ chart_data.labels | safe }},
+        datasets: [{
+            label: 'Note',
+            data: {{ chart_data.values | safe }},
+            backgroundColor: [
+                '#0d6efd',
+                '#198754',
+                '#ffc107',
+                '#dc3545',
+                '#6f42c1',
+                '#20c997'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 10
+            }
+        }
+    }
+});
+</script>
+
+</body>
+</html>
