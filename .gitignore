@@ -1,10 +1,10 @@
-# secrete
+# Google credentials
 credentials.json
+token.json
 
-# cache
+# Python cache
 __pycache__/
 *.pyc
 
-# virtual env
-venv/
-.env
+# Local databases
+*.db

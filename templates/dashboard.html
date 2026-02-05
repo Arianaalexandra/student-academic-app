@@ -30,40 +30,46 @@
 <div class="container my-5">
 
     <!-- MEDIA GENERALĂ -->
-    <div class="row mb-4">
+    <div class="row mb-5">
         <div class="col-md-4">
             <div class="card shadow-sm text-center">
                 <div class="card-body">
                     <h6 class="text-muted">Media generală</h6>
                     <h1 class="fw-bold text-primary">
-                        {{ general_average | round(2) if general_average else "—" }}
-                    </h1>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card shadow-sm text-center">
-                <div class="card-body">
-                    <h6 class="text-muted">Media Semestrul 1</h6>
-                    <h1 class="fw-bold text-success">
-                        {{ semester_averages[1] | round(2) if semester_averages[1] else "—" }}
-                    </h1>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card shadow-sm text-center">
-                <div class="card-body">
-                    <h6 class="text-muted">Media Semestrul 2</h6>
-                    <h1 class="fw-bold text-warning">
-                        {{ semester_averages[2] | round(2) if semester_averages[2] else "—" }}
+                        {{ general_average if general_average else "—" }}
                     </h1>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- MEDII PE ANI + SEMESTRE -->
+    {% for year, sems in year_semester_averages.items() %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header fw-bold bg-white">
+            <i class="bi bi-calendar-check me-2"></i>
+            Anul {{ year }}
+        </div>
+
+        <div class="card-body">
+            <div class="row text-center">
+                <div class="col-md-6">
+                    <h6 class="text-muted">Media Semestrul 1</h6>
+                    <h3 class="fw-bold text-success">
+                        {{ sems[1] if sems[1] else "—" }}
+                    </h3>
+                </div>
+
+                <div class="col-md-6">
+                    <h6 class="text-muted">Media Semestrul 2</h6>
+                    <h3 class="fw-bold text-warning">
+                        {{ sems[2] if sems[2] else "—" }}
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
 
     <!-- GRAFIC NOTE -->
     <div class="card shadow-sm mb-5">
@@ -73,45 +79,53 @@
         </div>
 
         <div class="card-body">
-            <canvas id="gradesChart" height="100"></canvas>
+            <canvas id="gradesChart" height="120"></canvas>
         </div>
     </div>
 
-    <!-- NOTE PE SEMESTRE -->
-    {% for sem in [1,2] %}
-    <div class="card shadow-sm mb-4">
-        <div class="card-header fw-bold bg-white">
-            <i class="bi bi-journal-bookmark-fill me-2"></i>
-            Semestrul {{ sem }}
-        </div>
+    <!-- NOTE PE ANI + SEMESTRE -->
+    {% for year in [1,2,3] %}
+        {% for sem in [1,2] %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header fw-bold bg-white">
+                <i class="bi bi-journal-bookmark-fill me-2"></i>
+                Anul {{ year }} – Semestrul {{ sem }}
+            </div>
 
-        <div class="card-body table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>Disciplină</th>
-                        <th class="text-center">Notă</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for g in grades if g.semester == sem %}
-                    <tr>
-                        <td>{{ g.subject }}</td>
-                        <td class="text-center">
-                            <span class="badge bg-primary fs-6">{{ g.grade }}</span>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="2" class="text-center text-muted">
-                            Nu există note pentru acest semestru
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+            <div class="card-body table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Disciplină</th>
+                            <th class="text-center">Notă</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% set found = false %}
+                    {% for g in grades %}
+                        {% if g.year == year and g.semester == sem %}
+                        {% set found = true %}
+                        <tr>
+                            <td>{{ g.subject }}</td>
+                            <td class="text-center">
+                                <span class="badge bg-primary fs-6">{{ g.grade }}</span>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if not found %}
+                        <tr>
+                            <td colspan="2" class="text-center text-muted">
+                                Nu există note pentru această perioadă
+                            </td>
+                        </tr>
+                    {% endif %}
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
+        {% endfor %}
     {% endfor %}
 
 </div>
@@ -153,3 +167,4 @@ new Chart(ctx, {
 
 </body>
 </html>
+

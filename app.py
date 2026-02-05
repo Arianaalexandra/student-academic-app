@@ -1,41 +1,18 @@
+import matplotlib
+matplotlib.use("Agg")
+
 from flask import Flask, render_template, request, redirect, url_for, session
-import sqlite3
 from functools import wraps
 import os
+
+# 🔹 IMPORT CORECT DIN database.py
+from database import get_db_connection, init_db
 
 app = Flask(__name__)
 app.secret_key = "secret123"
 
-DB_PATH = os.path.join(os.getcwd(), "database.db")
-
-
-# ======================
-# DATABASE
-# ======================
-def get_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
-
-
-def init_db():
-    conn = get_db()
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS grades (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            student_email TEXT NOT NULL,
-            subject TEXT NOT NULL,
-            grade INTEGER NOT NULL,
-            semester INTEGER NOT NULL
-        )
-    """)
-    conn.commit()
-    conn.close()
-
-
-# 🔥 AICI ESTE CHEIA
+# 🔥 CREARE TABELĂ O SINGURĂ DATĂ
 init_db()
-
 
 # ======================
 # AUTH DECORATOR
@@ -90,23 +67,26 @@ def logout():
 @app.route("/admin", methods=["GET", "POST"])
 @login_required("admin")
 def admin():
-    conn = get_db()
+    conn = get_db_connection()
 
     if request.method == "POST":
         student_email = request.form["student_email"]
         subject = request.form["subject"]
         grade = int(request.form["grade"])
         semester = int(request.form["semester"])
+        year = int(request.form["year"])  # 🔥 AN DE STUDIU
 
         conn.execute("""
-            INSERT INTO grades (student_email, subject, grade, semester)
-            VALUES (?, ?, ?, ?)
-        """, (student_email, subject, grade, semester))
+            INSERT INTO grades (student_email, subject, grade, semester, year)
+            VALUES (?, ?, ?, ?, ?)
+        """, (student_email, subject, grade, semester, year))
+
         conn.commit()
 
     grades = conn.execute("""
-        SELECT * FROM grades
-        ORDER BY student_email
+        SELECT *
+        FROM grades
+        ORDER BY student_email, year, semester
     """).fetchall()
 
     conn.close()
@@ -119,7 +99,7 @@ def admin():
 @app.route("/delete-grade/<int:id>")
 @login_required("admin")
 def delete_grade(id):
-    conn = get_db()
+    conn = get_db_connection()
     conn.execute("DELETE FROM grades WHERE id = ?", (id,))
     conn.commit()
     conn.close()
@@ -133,41 +113,63 @@ def delete_grade(id):
 @login_required("student")
 def dashboard():
     email = session["user"]
-    conn = get_db()
+    conn = get_db_connection()
 
     grades = conn.execute("""
-        SELECT subject, grade, semester
+        SELECT subject, grade, semester, year
         FROM grades
         WHERE student_email = ?
+        ORDER BY year, semester
     """, (email,)).fetchall()
 
     conn.close()
 
-    semester_averages = {1: None, 2: None}
-    general_average = None
+    # ----------------------
+    # MEDII PE ANI + SEMESTRE
+    # ----------------------
+    averages = {}
+    all_grades = []
 
-    if grades:
-        all_grades = [g["grade"] for g in grades]
-        general_average = sum(all_grades) / len(all_grades)
+    for g in grades:
+        year = g["year"]
+        semester = g["semester"]
+        averages.setdefault(year, {1: [], 2: []})
+        averages[year][semester].append(g["grade"])
+        all_grades.append(g["grade"])
 
-        for sem in (1, 2):
-            sem_grades = [g["grade"] for g in grades if g["semester"] == sem]
-            if sem_grades:
-                semester_averages[sem] = sum(sem_grades) / len(sem_grades)
+    year_semester_averages = {}
+    for year, sems in averages.items():
+        year_semester_averages[year] = {}
+        for sem, notes in sems.items():
+            year_semester_averages[year][sem] = (
+                round(sum(notes) / len(notes), 2) if notes else None
+            )
 
+    general_average = (
+        round(sum(all_grades) / len(all_grades), 2) if all_grades else None
+    )
+
+    # ----------------------
+    # DATE PENTRU GRAFIC
+    # ----------------------
     chart_data = {
-        "labels": [g["subject"] for g in grades],
+        "labels": [f"{g['subject']} (An {g['year']})" for g in grades],
         "values": [g["grade"] for g in grades]
     }
 
     return render_template(
         "dashboard.html",
         grades=grades,
-        semester_averages=semester_averages,
+        year_semester_averages=year_semester_averages,
         general_average=general_average,
         chart_data=chart_data
     )
 
 
+# ======================
+# RUN
+# ======================
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
+
+

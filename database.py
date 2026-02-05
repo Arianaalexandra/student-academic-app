@@ -17,7 +17,8 @@ def init_db():
             student_email TEXT NOT NULL,
             subject TEXT NOT NULL,
             grade INTEGER NOT NULL,
-            semester INTEGER NOT NULL
+            semester INTEGER NOT NULL,
+            year INTEGER NOT NULL
         )
     """)
     conn.commit()
