@@ -11,8 +11,14 @@ from database import get_db_connection, init_db
 app = Flask(__name__)
 app.secret_key = "secret123"
 
-# 🔥 CREARE TABELĂ O SINGURĂ DATĂ
-init_db()
+
+# ======================
+# INITIALIZARE DB (CORECT PENTRU RENDER)
+# ======================
+@app.before_first_request
+def initialize_database():
+    init_db()
+
 
 # ======================
 # AUTH DECORATOR
@@ -74,7 +80,7 @@ def admin():
         subject = request.form["subject"]
         grade = int(request.form["grade"])
         semester = int(request.form["semester"])
-        year = int(request.form["year"])  # 🔥 AN DE STUDIU
+        year = int(request.form["year"])
 
         conn.execute("""
             INSERT INTO grades (student_email, subject, grade, semester, year)
@@ -171,5 +177,3 @@ def dashboard():
 # ======================
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
-
-
