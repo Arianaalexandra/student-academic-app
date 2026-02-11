@@ -177,7 +177,7 @@ def dashboard():
 # ======================
 @app.route("/api/grades", methods=["GET"])
 def api_grades():
-    conn = get_db()
+    conn = get_db_connection()
 
     grades = conn.execute("""
         SELECT student_email, subject, grade, semester, year
