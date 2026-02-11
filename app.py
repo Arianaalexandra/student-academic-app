@@ -16,9 +16,8 @@ app.secret_key = "secret123"
 # ======================
 # INITIALIZARE DB (CORECT PENTRU RENDER)
 # ======================
-@app.before_first_request
-def initialize_database():
-    init_db()
+
+init_db()
 
 
 # ======================
