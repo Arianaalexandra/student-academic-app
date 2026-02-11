@@ -173,68 +173,31 @@ def dashboard():
     )
 
 # ======================
-# REST API ENDPOINTS
+# API - REST
 # ======================
-
-# GET toate notele
 @app.route("/api/grades", methods=["GET"])
-def api_get_all_grades():
+def api_grades():
     conn = get_db()
-    grades = conn.execute("SELECT * FROM grades").fetchall()
+
+    grades = conn.execute("""
+        SELECT student_email, subject, grade, semester, year
+        FROM grades
+        ORDER BY student_email, year, semester
+    """).fetchall()
+
     conn.close()
 
-    result = [dict(g) for g in grades]
+    result = []
+    for g in grades:
+        result.append({
+            "student_email": g["student_email"],
+            "subject": g["subject"],
+            "grade": g["grade"],
+            "semester": g["semester"],
+            "year": g["year"]
+        })
+
     return jsonify(result)
-
-
-# GET notele unui student
-@app.route("/api/student/<email>", methods=["GET"])
-def api_get_student_grades(email):
-    conn = get_db()
-    grades = conn.execute(
-        "SELECT * FROM grades WHERE student_email = ?",
-        (email,)
-    ).fetchall()
-    conn.close()
-
-    result = [dict(g) for g in grades]
-    return jsonify(result)
-
-
-# POST adăugare notă prin API
-@app.route("/api/grades", methods=["POST"])
-def api_add_grade():
-    data = request.get_json()
-
-    student_email = data.get("student_email")
-    subject = data.get("subject")
-    grade = data.get("grade")
-    semester = data.get("semester")
-    year = data.get("year")
-
-    conn = get_db()
-    conn.execute(
-        """
-        INSERT INTO grades (student_email, subject, grade, semester, year)
-        VALUES (?, ?, ?, ?, ?)
-        """,
-        (student_email, subject, grade, semester, year)
-    )
-    conn.commit()
-    conn.close()
-
-    return jsonify({"message": "Nota adăugată cu succes"}), 201
-
-
-# DELETE notă prin API
-@app.route("/api/grades/<int:id>", methods=["DELETE"])
-def api_delete_grade(id):
-    conn = get_db()
-    conn.execute("DELETE FROM grades WHERE id = ?", (id,))
-    conn.commit()
-    conn.close()
-
-    return jsonify({"message": "Nota ștearsă cu succes"})
 
 
 
