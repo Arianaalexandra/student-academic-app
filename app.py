@@ -154,6 +154,12 @@ def dashboard():
     general_average = (
         round(sum(all_grades) / len(all_grades), 2) if all_grades else None
     )
+    return render_template(
+        "dashboard.html",
+        grades=grades,
+        year_semester_averages=year_semester_averages,
+        general_average=general_average
+    )
 
    
 
