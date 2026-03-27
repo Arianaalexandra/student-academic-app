@@ -155,24 +155,18 @@ def dashboard():
         round(sum(all_grades) / len(all_grades), 2) if all_grades else None
     )
 
+   # CHART DATA (CORECT)
     # ----------------------
-    # DATE PENTRU GRAFIC
-    # ----------------------
+    labels = []
+    values = []
+
+    for g in grades:
+        labels.append(f"{g['subject']} (An {g['year']})")
+        values.append(g["grade"])
+
     chart_data = {
-       labels = []
-values = []
-
-for g in grades:
-    labels.append(f"{g['subject']} (An {g['year']})")
-    values.append(g["grade"])
-
-chart_data = {
-    "labels": labels,
-    "values": values
-}
-
-print("CHART DATA:", chart_data)  # DEBUG
-
+        "labels": labels,
+        "values": values
     }
 
     return render_template(
