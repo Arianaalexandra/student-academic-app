@@ -131,38 +131,52 @@
 </div>
 
 <script>
-const ctx = document.getElementById('gradesChart');
+<script>
+document.addEventListener("DOMContentLoaded", function () {
 
-new Chart(ctx, {
-    type: 'bar',
-    data: {
-        labels: {{ chart_data.labels | safe }},
-        datasets: [{
-            label: 'Note',
-            data: {{ chart_data.values | safe }},
-            backgroundColor: [
-                '#0d6efd',
-                '#198754',
-                '#ffc107',
-                '#dc3545',
-                '#6f42c1',
-                '#20c997'
-            ]
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: { display: false }
+    const canvas = document.getElementById('gradesChart');
+
+    if (!canvas) {
+        console.log("Canvas nu exista!");
+        return;
+    }
+
+    const ctx = canvas.getContext('2d');
+
+    const labels = {{ chart_data.labels | tojson }};
+    const values = {{ chart_data.values | tojson }};
+
+    console.log("Labels:", labels);
+    console.log("Values:", values);
+
+    if (labels.length === 0) {
+        console.log("NU AI DATE pentru grafic");
+        return;
+    }
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Note',
+                data: values,
+                backgroundColor: '#0d6efd'
+            }]
         },
-        scales: {
-            y: {
-                beginAtZero: true,
-                max: 10
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 10
+                }
             }
         }
-    }
+    });
+
 });
+</script>
 </script>
 
 </body>

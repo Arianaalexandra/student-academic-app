@@ -159,8 +159,20 @@ def dashboard():
     # DATE PENTRU GRAFIC
     # ----------------------
     chart_data = {
-        "labels": [f"{g['subject']} (An {g['year']})" for g in grades],
-        "values": [g["grade"] for g in grades]
+       labels = []
+values = []
+
+for g in grades:
+    labels.append(f"{g['subject']} (An {g['year']})")
+    values.append(g["grade"])
+
+chart_data = {
+    "labels": labels,
+    "values": values
+}
+
+print("CHART DATA:", chart_data)  # DEBUG
+
     }
 
     return render_template(
