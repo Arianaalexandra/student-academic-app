@@ -155,27 +155,7 @@ def dashboard():
         round(sum(all_grades) / len(all_grades), 2) if all_grades else None
     )
 
-   # CHART DATA (CORECT)
-    # ----------------------
-    labels = []
-    values = []
-
-    for g in grades:
-        labels.append(f"{g['subject']} (An {g['year']})")
-        values.append(g["grade"])
-
-    chart_data = {
-        "labels": labels,
-        "values": values
-    }
-
-    return render_template(
-        "dashboard.html",
-        grades=grades,
-        year_semester_averages=year_semester_averages,
-        general_average=general_average,
-        chart_data=chart_data
-    )
+   
 
 # ======================
 # API - REST
